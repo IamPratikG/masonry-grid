@@ -3,7 +3,6 @@ import { Routes, Route, Link } from "react-router-dom";
 import { PhotosProvider, usePhotos } from "./PhotosContext";
 import PhotoDetail from "./PhotoDetail";
 import getPhotos from "./services/getPhotos";
-import "./App.css";
 
 function AppContent() {
   const { photos, loading, error, setPhotos, setLoading, setError } =
@@ -15,16 +14,16 @@ function AppContent() {
 
   if (loading)
     return (
-      <div className="loading-state">
-        <div className="spinner"></div>
+      <div>
+        <div id="loading-spinner"></div>
         <p>Loading photos...</p>
       </div>
     );
 
   if (error)
     return (
-      <div className="error-state">
-        <div className="error-icon">&amp;#x26A0;</div>
+      <div>
+        <div>&amp;#x26A0;</div>
         <h2>Error Loading Photos</h2>
         <p>{error}</p>
         <button onClick={() => getPhotos(setPhotos, setLoading, setError)}>
@@ -34,19 +33,14 @@ function AppContent() {
     );
 
   return (
-    <div className="App">
+    <div>
       <h1>Photo Gallery</h1>
-      <div className="photo-grid">
+      <div>
         {photos.map((photo) => (
-          <Link
-            to={`/photos/${photo.id}`}
-            key={photo.id}
-            className="photo-card"
-          >
+          <Link to={`/photos/${photo.id}`} key={photo.id}>
             <img
               src={photo.src.medium}
               alt={photo.alt || `Photograph by ${photo.photographer}`}
-              className="grid-image"
             />
           </Link>
         ))}
