@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { usePhotos } from "../PhotosContext";
 import getPhotos from "../services/getPhotos";
 import MasonryWall from "./MasonryWall";
+import { useErrorBoundary } from "react-error-boundary";
 
 const GalleryContainer = styled.div`
   max-width: 1200px;
@@ -30,29 +31,10 @@ const LoadingContainer = styled.div`
   height: 100vh;
 `;
 
-const ErrorContainer = styled.div`
-  text-align: center;
-  padding: 2rem;
-`;
-
-const RetryButton = styled.button`
-  background-color: #0070f3;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  margin-top: 1rem;
-
-  &:hover {
-    background-color: #0060df;
-  }
-`;
-
 function Gallery() {
   const { photos, loading, error, setPhotos, setLoading, setError } =
     usePhotos();
+  const { showBoundary } = useErrorBoundary();
 
   useEffect(() => {
     getPhotos(setPhotos, setLoading, setError);
@@ -60,16 +42,10 @@ function Gallery() {
 
   if (loading) return <LoadingContainer>Loading photos...</LoadingContainer>;
 
-  if (error)
-    return (
-      <ErrorContainer>
-        <h2>Error Loading Photos</h2>
-        <p>{error}</p>
-        <RetryButton onClick={() => getPhotos(setPhotos, setLoading, setError)}>
-          Retry
-        </RetryButton>
-      </ErrorContainer>
-    );
+  if (error) {
+    showBoundary(new Error(error));
+    return null;
+  }
 
   return (
     <GalleryContainer>
