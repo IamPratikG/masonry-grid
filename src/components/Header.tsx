@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useCallback } from "react";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import SearchBox from "./SearchBox";
+import { usePhotos } from "../PhotosContext";
 
 const StyledHeader = styled.header`
   background-color: #ffffff;
@@ -36,12 +38,40 @@ const NavLink = styled(Link)`
   }
 `;
 
+const CuratedButton = styled.button`
+  padding: 8px 12px;
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-right: 10rem;
+
+  &:hover {
+    background-color: #0060df;
+  }
+`;
+
 const Header = () => {
+  const { clearPhotos, setMode, mode } = usePhotos();
+  const navigate = useNavigate();
+
+  const handleCuratedClick = useCallback(() => {
+    clearPhotos();
+    setMode("curated");
+    navigate("/");
+  }, [clearPhotos, setMode, navigate]);
+
   return (
     <StyledHeader>
       <HeaderContent>
         <Logo to="/">Photo Gallery</Logo>
+        <SearchBox key={mode} />
         <Nav>
+          <CuratedButton onClick={handleCuratedClick}>
+            View Curated
+          </CuratedButton>
           <NavLink to="/">Home</NavLink>
         </Nav>
       </HeaderContent>

@@ -32,17 +32,17 @@ const LoadingContainer = styled.div`
 `;
 
 function Gallery() {
-  const { photos, loading, error, addPhotos, setLoading, setError } =
+  const { photos, loading, error, addPhotos, setLoading, setError, mode } =
     usePhotos();
   const { showBoundary } = useErrorBoundary();
 
   const memoizedGetPhotos = useMemo(() => {
     return () => {
-      if (photos.length === 0) {
+      if (mode === "curated" && photos.length === 0) {
         getPhotos(addPhotos, setLoading, setError);
       }
     };
-  }, [photos.length, addPhotos, setLoading, setError]);
+  }, [mode, photos.length, addPhotos, setLoading, setError]);
 
   useEffect(() => {
     memoizedGetPhotos();
