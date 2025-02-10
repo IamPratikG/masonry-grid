@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { usePhotos } from "../PhotosContext";
@@ -32,13 +32,21 @@ const LoadingContainer = styled.div`
 `;
 
 function Gallery() {
-  const { photos, loading, error, setPhotos, setLoading, setError } =
+  const { photos, loading, error, addPhotos, setLoading, setError } =
     usePhotos();
   const { showBoundary } = useErrorBoundary();
 
+  const memoizedGetPhotos = useMemo(() => {
+    return () => {
+      if (photos.length === 0) {
+        getPhotos(addPhotos, setLoading, setError);
+      }
+    };
+  }, [photos.length, addPhotos, setLoading, setError]);
+
   useEffect(() => {
-    getPhotos(setPhotos, setLoading, setError);
-  }, [setPhotos, setLoading, setError]);
+    memoizedGetPhotos();
+  }, [memoizedGetPhotos]);
 
   if (loading) return <LoadingContainer>Loading photos...</LoadingContainer>;
 

@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useMemo } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
 import { Photo } from "pexels";
 
 type PhotosContextType = {
@@ -6,7 +12,7 @@ type PhotosContextType = {
   photoMap: Record<number, Photo>;
   loading: boolean;
   error: string | null;
-  setPhotos: React.Dispatch<React.SetStateAction<Photo[]>>;
+  addPhotos: (newPhotos: Photo[] | ((prevPhotos: Photo[]) => Photo[])) => void;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   setError: React.Dispatch<React.SetStateAction<string | null>>;
 };
@@ -16,7 +22,7 @@ const PhotosContext = createContext<PhotosContextType>({
   photoMap: {},
   loading: false,
   error: null,
-  setPhotos: () => {},
+  addPhotos: () => {},
   setLoading: () => {},
   setError: () => {},
 });
@@ -36,20 +42,35 @@ export const PhotosProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const addPhotos = useCallback(
+    (newPhotos: Photo[] | ((prevPhotos: Photo[]) => Photo[])) => {
+      setPhotos((prevPhotos) => {
+        if (typeof newPhotos === "function") {
+          return newPhotos(prevPhotos);
+        }
+        return [...prevPhotos, ...newPhotos];
+      });
+    },
+    []
+  );
+
   const photoMap = useMemo(() => createPhotoMap(photos), [photos]);
 
+  const contextValue = useMemo(
+    () => ({
+      photos,
+      photoMap,
+      loading,
+      error,
+      addPhotos,
+      setLoading,
+      setError,
+    }),
+    [photos, photoMap, loading, error, setPhotos]
+  );
+
   return (
-    <PhotosContext.Provider
-      value={{
-        photos,
-        photoMap,
-        loading,
-        error,
-        setPhotos,
-        setLoading,
-        setError,
-      }}
-    >
+    <PhotosContext.Provider value={contextValue}>
       {children}
     </PhotosContext.Provider>
   );

@@ -1,7 +1,7 @@
 import { createClient, Photo } from "pexels";
 
-export default function getPhotos(
-  setPhotos: (photos: Photo[]) => void,
+export default async function getPhotos(
+  addPhotos: (photos: Photo[]) => void,
   setLoading: (loading: boolean) => void,
   setError: (error: string | null) => void
 ) {
@@ -16,15 +16,31 @@ export default function getPhotos(
   }
 
   const client = createClient(apiKey);
-  client.photos
-    .curated({ per_page: 80 })
-    .then((response) => {
+  const perPage = 80;
+  const totalPages = 100;
+
+  const fetchPage = async (page: number) => {
+    try {
+      const response = await client.photos.curated({ page, per_page: perPage });
       if ("photos" in response) {
-        setPhotos(response.photos);
-      } else {
-        setError("Invalid API response");
+        addPhotos(response.photos);
       }
-    })
-    .catch((error: Error) => setError(error.message))
-    .finally(() => setLoading(false));
+    } catch (error) {
+      console.error(`Error fetching page ${page}:`, error);
+    }
+  };
+
+  const promises = Array.from({ length: totalPages }, (_, i) =>
+    fetchPage(i + 1)
+  );
+
+  try {
+    await Promise.all(promises);
+  } catch (error) {
+    setError(
+      error instanceof Error ? error.message : "An unknown error occurred"
+    );
+  } finally {
+    setLoading(false);
+  }
 }
